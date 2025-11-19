@@ -1,14 +1,26 @@
 #!/bin/bash
 
-# Quick Start Script for eBook & PDF Utilities Suite
-# This script sets up the environment and runs the Streamlit application
+# Setup Script for Cool Python Tools
+# This script finds Python, creates the virtual environment, and installs base dependencies.
 
 set -e  # Exit on error
 set -u  # Exit on undefined variable
 
-echo "📚 eBook & PDF Utilities Suite - Quick Start"
-echo "============================================="
+echo "🛠️  Cool Python Tools - Environment Setup"
+echo "========================================"
 echo ""
+
+# Check if virtual environment already exists
+if [ -d ".venv" ] && [ -f ".venv/bin/activate" ]; then
+    echo "✅ Virtual environment (.venv) already exists."
+    source .venv/bin/activate
+    echo "   Python Version: $(python --version)"
+    echo "   Python Path:    $(which python)"
+    echo ""
+    echo "Setup is already complete. You can run ./start.sh now."
+    echo "To recreate the environment, delete the '.venv' folder and run this script again."
+    exit 0
+fi
 
 # Function to add Python installation to arrays
 add_python() {
@@ -27,7 +39,7 @@ is_duplicate() {
     local path=$1
     local real_path=$(readlink -f "$path" 2>/dev/null || realpath "$path" 2>/dev/null || echo "$path")
     
-    for unique in "${UNIQUE_PATHS[@]}"; do
+    for unique in "${UNIQUE_PATHS[@]:-}"; do
         local unique_real=$(readlink -f "$unique" 2>/dev/null || realpath "$unique" 2>/dev/null || echo "$unique")
         if [ "$real_path" = "$unique_real" ]; then
             return 0  # Is duplicate
@@ -122,59 +134,23 @@ echo "   Path: $PYTHON_PATH"
 echo ""
 
 # Check if virtual environment exists
-if [ ! -d "venv" ]; then
-    echo "📦 Creating virtual environment with Python $PYTHON_VERSION..."
-    "$PYTHON_PATH" -m venv venv
+if [ ! -d ".venv" ]; then
+    echo "📦 Creating virtual environment (.venv) with Python $PYTHON_VERSION..."
+    "$PYTHON_PATH" -m venv .venv
     echo "✅ Virtual environment created"
 else
-    echo "✅ Virtual environment already exists"
+    echo "✅ Virtual environment (.venv) already exists"
 fi
 
 # Activate virtual environment
 echo "🔧 Activating virtual environment..."
-source venv/bin/activate
+source .venv/bin/activate
 
 # Upgrade pip
 echo "📥 Upgrading pip..."
 pip install --upgrade pip -q
 
-# Install/upgrade dependencies
-echo "📥 Installing dependencies..."
-pip install -r requirements.txt -q
-
-echo "✅ Dependencies installed"
 echo ""
-
-# Check for Tesseract (optional)
-if command -v tesseract &> /dev/null; then
-    echo "✅ Tesseract OCR found: $(tesseract --version | head -1)"
-else
-    echo "⚠️  Tesseract OCR not found (optional for OCR functionality)"
-    echo "   Install with: brew install tesseract (macOS) or apt-get install tesseract-ocr (Linux)"
-fi
-
+echo "✅ Setup complete!"
+echo "   You can now run ./start.sh to launch the tools."
 echo ""
-echo "📌 VS Code Setup (Optional):"
-echo "   1. Press Cmd+Shift+P (or Ctrl+Shift+P on Windows/Linux)"
-echo "   2. Type 'Python: Select Interpreter'"
-echo "   3. Choose the interpreter from venv/bin/python"
-echo "   Or click on the Python version in the bottom-right status bar."
-echo ""
-
-# Try to trigger VS Code interpreter selection if code command is available
-if command -v code &> /dev/null; then
-    echo "🔧 Attempting to set VS Code interpreter..."
-    code --command python.setInterpreter "$(pwd)/venv/bin/python" 2>/dev/null || true
-fi
-
-echo ""
-echo "🚀 Starting application..."
-echo ""
-echo "   The application will open in your default browser"
-echo "   Press Ctrl+C to stop the application"
-echo ""
-echo "============================================="
-echo ""
-
-# Run the Streamlit app
-streamlit run app.py
